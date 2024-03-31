@@ -1,15 +1,22 @@
 import express, { Express, Request, Response } from "express";
-import dotenv from "dotenv";
+import mongoose from "mongoose";
+import { readEnv } from "./env";
 
-dotenv.config();
+const ENV = readEnv();
 
-const app: Express = express();
-const port = process.env.PORT || 3000;
+main().catch(err => console.log(err));
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World!");
-});
+async function main() {
+    await mongoose.connect(`mongodb://${ENV.MONGO_USER}:${ENV.MONGO_PASSWORD}@127.0.0.1:${ENV.MONGO_PORT}`);
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
-});
+    const app: Express = express();
+    const port = process.env.PORT || 3000;
+
+    app.get("/", (req: Request, res: Response) => {
+        res.send("Hello World!");
+    });
+
+    app.listen(port, () => {
+        console.log(`Server is running at http://localhost:${port}`);
+    });
+}
