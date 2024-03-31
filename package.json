@@ -7,7 +7,13 @@
     "build": "npx tsc",
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
-    "mongo:up": "docker compose -f ./docker-compose.dev.yml up -d"
+    "mongo:up": "docker compose -f ./docker-compose.dev.yml up -d",
+    "format": "npx prettier . --write",
+    "lint": "eslint -c ./.eslintrc.js .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
   },
   "repository": {
     "type": "git",
@@ -27,7 +33,13 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
+    "@typescript-eslint/eslint-plugin": "^7.4.0",
+    "@typescript-eslint/parser": "^7.4.0",
+    "eslint": "^8.57.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
     "nodemon": "^3.1.0",
+    "prettier": "3.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.3"
   }
