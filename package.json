@@ -1,0 +1,31 @@
+{
+  "name": "food-nutrition-api",
+  "version": "0.0.0",
+  "description": "API server for logging and categorizing nutritional information found in photos of food",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "start": "node dist/index.js",
+    "dev": "nodemon src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uiowa-iot-team6/food-nutrition-api.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/uiowa-iot-team6/food-nutrition-api/issues"
+  },
+  "homepage": "https://github.com/uiowa-iot-team6/food-nutrition-api#readme",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "nodemon": "^3.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.3"
+  }
+}
