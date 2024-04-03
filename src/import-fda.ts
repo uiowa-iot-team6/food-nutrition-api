@@ -25,6 +25,11 @@ async function download(
     fs.mkdirSync(outDir, { recursive: true });
   }
 
+  if (fs.existsSync(zipPath)) {
+    logger.info({ zipPath }, "Deleting the outdated zip file.");
+    fs.rmSync(zipPath);
+  }
+
   const request = new Promise((res, rej) => {
     https.get(url, function (response) {
       logger.info({ downloadUrl: url }, "Beginning download");
