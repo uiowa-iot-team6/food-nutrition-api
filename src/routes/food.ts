@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
 import encode from "../utils/encode";
+import { errorResponse } from "../utils/response";
 
 export const foodRouter = Router();
 
@@ -18,7 +19,7 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
   const photo = req.files?.photo?.at(0);
 
   if (!photo) {
-    return res.status(400).json({ message: "No photo provided" });
+    return errorResponse(res, 400, "No photo provided");
   }
 
   const parsedFields = z
@@ -28,7 +29,7 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
     .safeParse(req.fields);
 
   if (!parsedFields.success) {
-    return res.status(400).json({ message: "No mass field provided" });
+    return errorResponse(res, 400, "No mass field provided");
   }
 
   const response = await openai.chat.completions.create({
@@ -51,6 +52,20 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
       },
     ],
   });
+
+  const message = response.choices[0].message.content;
+
+  if (!message) {
+    return errorResponse(res, 400, "Unable to find any relevant food");
+  }
+
+  if (/(not food)/i.test(message)) {
+    return errorResponse(
+      res,
+      400,
+      "The image does not contain any relevant food",
+    );
+  }
 
   res.send({
     message: response.choices[0].message,
