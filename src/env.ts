@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { z } from "zod";
+
 dotenv.config();
 
 const EnvSchema = z.object({
@@ -10,7 +11,7 @@ const EnvSchema = z.object({
   MONGO_PORT: z.coerce.number(),
 });
 
-export function readEnv() {
+function readEnv() {
   return EnvSchema.parse({
     PORT: process.env.PORT,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
@@ -19,3 +20,5 @@ export function readEnv() {
     MONGO_PASSWORD: process.env.MONGO_PASSWORD,
   });
 }
+
+export const ENV = readEnv();
