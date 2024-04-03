@@ -14,7 +14,7 @@ const EnvSchema = z.object({
 });
 
 function readEnv() {
-  const env = EnvSchema.parse({
+  return EnvSchema.parse({
     PORT: process.env.PORT,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     UPLOAD_PHOTO_DIR: process.env.UPLOAD_PHOTO_DIR,
@@ -22,12 +22,6 @@ function readEnv() {
     MONGO_PORT: process.env.MONGO_PORT,
     MONGO_PASSWORD: process.env.MONGO_PASSWORD,
   });
-
-  if (!fs.existsSync(env.UPLOAD_PHOTO_DIR)) {
-    fs.mkdirSync(env.UPLOAD_PHOTO_DIR, { recursive: true });
-  }
-
-  return env;
 }
 
 export const ENV = readEnv();

@@ -1,20 +1,13 @@
 import { Router } from "express";
 import { app } from "..";
-import bodyParser from "body-parser";
 import { foodRouter } from "./food";
-import { buildDependencyInjector } from "../middleware/dependencies";
-
-const jsonParser = bodyParser.json();
+import { injectDependencies } from "../middleware/dependencies";
+import { formidableParse } from "../middleware/formidable";
 
 const apiRouter = Router();
 
-apiRouter.use(jsonParser);
-buildDependencyInjector()
-  .then((dependencyInjector) => {
-    console.log("injecting 1!");
-    apiRouter.use(dependencyInjector);
-  })
-  .catch((err) => console.error(err));
+apiRouter.use(formidableParse);
+apiRouter.use(injectDependencies);
 
 app.use("/api", apiRouter);
 
