@@ -56,15 +56,15 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
   const message = response.choices[0].message.content;
 
   if (!message) {
-    return errorResponse(res, 400, "Unable to find any relevant food");
-  }
-
-  if (/(not food)/i.test(message)) {
     return errorResponse(
       res,
       400,
-      "The image does not contain any relevant food",
+      "An unexpected error occured with the OpenAI API response.",
     );
+  }
+
+  if (/(not food)/i.test(message)) {
+    return errorResponse(res, 400, "Unable to detect food from image.");
   }
 
   res.send({
