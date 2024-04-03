@@ -24,12 +24,16 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
 
   const parsedFields = z
     .object({
-      mass: z.coerce.number(),
+      mass: z
+        .array(z.coerce.number())
+        .min(1)
+        .max(1)
+        .transform((arg) => arg.at(0)),
     })
     .safeParse(req.fields);
 
   if (!parsedFields.success) {
-    return errorResponse(res, 400, "No mass field provided");
+    return errorResponse(res, 400, "Invalid mass field provided");
   }
 
   const response = await openai.chat.completions.create({
@@ -64,7 +68,7 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
   }
 
   if (/(not food)/i.test(message)) {
-    return errorResponse(res, 400, "Unable to detect food from image.");
+    return errorResponse(res, 400, "No food found in image.");
   }
 
   res.send({

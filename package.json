@@ -10,7 +10,8 @@
     "mongo:up": "docker compose -f ./docker-compose.dev.yml up -d",
     "format": "npx prettier . --write",
     "lint": "eslint -c ./.eslintrc.js .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "seed:food": "ts-node src/import-fda.ts"
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
