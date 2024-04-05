@@ -10,7 +10,7 @@ const EnvSchema = z.object({
   MONGO_USER: z.string(),
   MONGO_PASSWORD: z.string(),
   MONGO_PORT: z.coerce.number(),
-  FOOD_DATA_DOWNLOAD: z.string().url(),
+  FOOD_DATA_API_KEY: z.string(),
 });
 
 function readEnv() {
@@ -21,7 +21,7 @@ function readEnv() {
     MONGO_USER: process.env.MONGO_USER,
     MONGO_PORT: process.env.MONGO_PORT,
     MONGO_PASSWORD: process.env.MONGO_PASSWORD,
-    FOOD_DATA_DOWNLOAD: process.env.FOOD_DATA_DOWNLOAD,
+    FOOD_DATA_API_KEY: process.env.FOOD_DATA_API_KEY,
   });
 }
 

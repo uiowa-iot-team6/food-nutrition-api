@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { z } from "zod";
 import encode from "../utils/encode";
 import { errorResponse } from "../utils/response";
+import usdaapi from "../utils/usda-api";
 
 export const foodRouter = Router();
 
@@ -70,6 +71,8 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
   if (/(not food)/i.test(message)) {
     return errorResponse(res, 400, "No food found in image.");
   }
+
+  console.log("Found foods: ", await usdaapi.foods(message));
 
   res.send({
     message: response.choices[0].message,
