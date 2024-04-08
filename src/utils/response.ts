@@ -7,6 +7,6 @@ export const errorResponse = (
 ) => {
   res.status(statusCode).json({
     success: false,
-    message,
+    error: message,
   });
 };

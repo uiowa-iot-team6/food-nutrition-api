@@ -1,6 +1,27 @@
+import { z } from "zod";
 import { ENV } from "../env";
 
-const FDA_ENDPOINT = "https://api.nal.usda.gov";
+const USDA_ENDPOINT = "https://api.nal.usda.gov";
+
+const USDANutrientSchema = z.object({
+  nutrientId: z.number(),
+  nutrientName: z.string(),
+  unitName: z.string(),
+  nutrientNumber: z.string(),
+  value: z.number(),
+});
+
+const USDAFoodSchema = z.object({
+  fdcId: z.number(),
+  description: z.string(),
+  servingSizeUnit: z.string().optional(),
+  servingSize: z.number().optional(),
+  foodNutrients: z.array(USDANutrientSchema),
+});
+
+const USDAResponseSchema = z.object({
+  foods: z.array(USDAFoodSchema),
+});
 
 /**
  * Refer to https://fdc.nal.usda.gov/api-guide.html#bkmk-2
@@ -13,14 +34,12 @@ async function searchFoods(query: string) {
     api_key: ENV.FOOD_DATA_API_KEY,
     query,
   });
-  const endpoint = new URL("/fdc/v1/foods/search", FDA_ENDPOINT);
-  console.log(endpoint);
+  const endpoint = new URL("/fdc/v1/foods/search", USDA_ENDPOINT);
   const response = await fetch(`${endpoint}?${params.toString()}`);
 
   if (!response.ok) throw new Error("Failed to get food data.");
 
-  // TODO: Schema parse for type safety
-  return await response.json();
+  return USDAResponseSchema.parse(await response.json()).foods;
 }
 
 export default {

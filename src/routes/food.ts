@@ -69,12 +69,33 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
   }
 
   if (/(not food)/i.test(message)) {
-    return errorResponse(res, 400, "No food found in image.");
+    return errorResponse(res, 404, "No food found in image.");
   }
 
-  console.log("Found foods: ", await usdaapi.foods(message));
+  try {
+    const foods = (await usdaapi.foods(message)).filter((food) => {
+      return food.servingSize && food.servingSizeUnit;
+    });
 
-  res.send({
-    message: response.choices[0].message,
-  });
+    const selectedFood = foods.at(0);
+
+    if (!selectedFood) {
+      return errorResponse(
+        res,
+        404,
+        `No matching food found within USDA database matching label '${message}'`,
+      );
+    }
+
+    return res.send({
+      ...selectedFood,
+    });
+  } catch (e) {
+    req.log.error("Error fetching foods from USDA API", e);
+    return errorResponse(
+      res,
+      500,
+      `An unexpected error occured: ${(e as unknown as Error).message}`,
+    );
+  }
 });
