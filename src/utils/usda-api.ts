@@ -23,6 +23,8 @@ const USDAResponseSchema = z.object({
   foods: z.array(USDAFoodSchema),
 });
 
+export type IUSDAFood = z.infer<typeof USDAFoodSchema>;
+
 /**
  * Refer to https://fdc.nal.usda.gov/api-guide.html#bkmk-2
  * for detailed documentation of the open-fda API endpoints.
