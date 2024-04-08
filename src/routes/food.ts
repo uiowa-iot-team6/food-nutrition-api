@@ -3,6 +3,7 @@ import { z } from "zod";
 import encode from "../utils/encode";
 import { errorResponse } from "../utils/response";
 import usdaapi from "../utils/usda-api";
+import FuzzySearch from "fuzzy-search";
 
 export const foodRouter = Router();
 
@@ -77,9 +78,12 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
       return food.servingSize && food.servingSizeUnit;
     });
 
-    const selectedFood = foods.at(0);
+    const searcher = new FuzzySearch(foods, ["description"], {
+      caseSensitive: false,
+    });
+    const closestMatch = searcher.search(message).at(0);
 
-    if (!selectedFood) {
+    if (!closestMatch) {
       return errorResponse(
         res,
         404,
@@ -88,7 +92,7 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
     }
 
     return res.send({
-      ...selectedFood,
+      ...closestMatch,
     });
   } catch (e) {
     req.log.error("Error fetching foods from USDA API", e);
