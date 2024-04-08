@@ -4,6 +4,7 @@ import encode from "../utils/encode";
 import { errorResponse } from "../utils/response";
 import usdaapi from "../utils/usda-api";
 import FuzzySearch from "fuzzy-search";
+import { createFoodRecordFromUSDAFood } from "../models/food";
 
 export const foodRouter = Router();
 
@@ -75,7 +76,7 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
 
   try {
     const foods = (await usdaapi.foods(message)).filter((food) => {
-      return food.servingSize && food.servingSizeUnit;
+      return food.servingSize && food.servingSizeUnit?.toLowerCase() === "g";
     });
 
     const searcher = new FuzzySearch(foods, ["description"], {
@@ -90,6 +91,12 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
         `No matching food found within USDA database matching label '${message}'`,
       );
     }
+
+    const foodRecord = createFoodRecordFromUSDAFood(
+      closestMatch,
+      parsedFields.data.mass!,
+    );
+    foodRecord.save();
 
     return res.send({
       ...closestMatch,
