@@ -19,9 +19,7 @@ export function injectDependencies(
 ) {
   req.dependencies = {
     openai,
-    mongo: new MongoContext(
-      `mongodb://${ENV.MONGO_USER}:${ENV.MONGO_PASSWORD}@127.0.0.1:${ENV.MONGO_PORT}`,
-    ),
+    mongo: new MongoContext(ENV.MONGO_URL),
   };
   next();
 }
