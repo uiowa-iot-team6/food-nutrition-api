@@ -4,6 +4,6 @@ export class MongoContext {
   public mongoose: Promise<typeof mongoose>;
 
   constructor(private url: string) {
-    this.mongoose = mongoose.connect(url);
+    this.mongoose = mongoose.connect(this.url);
   }
 }
