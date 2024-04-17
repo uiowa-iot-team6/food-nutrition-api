@@ -150,7 +150,7 @@ foodRouter.post("/create-manually", async (req: Request, res: Response) => {
       return res.status(201).json({ food: foodRecord });
     }
   } catch (error) {
-    console.error("Error creating food record:", error);
+    req.log.error("Error creating food record:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 });

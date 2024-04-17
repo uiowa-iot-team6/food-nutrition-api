@@ -7,7 +7,6 @@ import pinohttp from "pino-http";
 import { authRouter } from "./auth";
 import { UserRouter } from "./user";
 import express from "express";
-import bodyParser from "body-parser";
 const apiRouter = Router();
 
 apiRouter.use(pinohttp());

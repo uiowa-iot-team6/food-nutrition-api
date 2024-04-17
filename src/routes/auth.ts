@@ -16,7 +16,12 @@ router.post("/register", async (req, res) => {
   if (!username || !email || !password || !firstname || !lastname) {
     return res.status(400).json({ message: "Missing required fields" });
   }
-  console.log(username, email, password, firstname, lastname);
+
+  req.log.info(
+    { username, email, password, firstname, lastname },
+    "Creating user with provided information.",
+  );
+
   // Check if the user already exists in the database
   const existingUser = await UserModel.findOne({ username });
   if (existingUser) {

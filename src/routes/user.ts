@@ -1,5 +1,4 @@
 import express from "express";
-import dotenv from "dotenv";
 import { UserModel } from "../models/user";
 import bcrypt from "bcrypt";
 const router = express.Router();
@@ -54,7 +53,6 @@ router.put("/update-weight", async (req, res) => {
 });
 //update goals
 router.put("/update-goals", async (req, res) => {
-  console.log(req.body);
   if (!req.fields) {
     return res.status(400).json({ message: "Request query is missing" });
   }
