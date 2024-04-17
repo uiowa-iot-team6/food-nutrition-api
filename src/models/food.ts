@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 import { IUSDAFood } from "../utils/usda-api";
 
 export const FoodNutrientSchema = new Schema({
@@ -16,6 +16,8 @@ export const FoodRecordSchema = new Schema({
   servingSizeUnit: String,
   servingsConsumed: Number,
   foodNutrients: [FoodNutrientSchema],
+  associatedUser: { type: Schema.Types.ObjectId, ref: "users" },
+  date: { type: Date, default: Date.now },
 });
 
 export const FoodRecord = model("FoodRecord", FoodRecordSchema);

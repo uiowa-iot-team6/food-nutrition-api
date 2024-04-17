@@ -4,8 +4,8 @@ import encode from "../utils/encode";
 import { errorResponse } from "../utils/response";
 import usdaapi from "../utils/usda-api";
 import FuzzySearch from "fuzzy-search";
-import { createFoodRecordFromUSDAFood } from "../models/food";
-
+import { createFoodRecordFromUSDAFood, FoodRecord } from "../models/food";
+import { UserModel } from "../models/user";
 export const foodRouter = Router();
 
 const foodPrompt =
@@ -108,5 +108,68 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
       500,
       `An unexpected error occured: ${(e as unknown as Error).message}`,
     );
+  }
+});
+
+foodRouter.post("/create-manually", async (req: Request, res: Response) => {
+  if (!req.fields) {
+    return res.status(400).json({ message: "Request body is missing" });
+  }
+  const {
+    username,
+    fdcId,
+    description,
+    servingSize,
+    servingSizeUnit,
+    servingsConsumed,
+    foodNutrients,
+  } = req.fields;
+
+  try {
+    // Find the user by username
+    const user = await UserModel.findOne({ username });
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid user" });
+    }
+    if (user) {
+      // Create a new food record
+      const foodRecord = new FoodRecord({
+        fdcId,
+        description,
+        servingSize,
+        servingSizeUnit,
+        servingsConsumed,
+        foodNutrients,
+        associatedUser: user._id,
+      });
+
+      // Save the food record to the database
+      await foodRecord.save();
+
+      return res.status(201).json({ food: foodRecord });
+    }
+  } catch (error) {
+    console.error("Error creating food record:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+foodRouter.get("/get-by-username", async (req, res) => {
+  if (!req.query) {
+    return res.status(400).json({ message: "Request query is missing" });
+  }
+  const { username } = req.query;
+  if (typeof username === "string") {
+    const user = await UserModel.findOne({ username });
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid user" });
+    }
+    if (user) {
+      //find food by associated user id
+      const food = await FoodRecord.find({ associatedUser: user._id });
+      return res.status(201).json({ food });
+    }
   }
 });
