@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 import { IUSDAFood } from "../utils/usda-api";
 
 export const FoodNutrientSchema = new Schema({
