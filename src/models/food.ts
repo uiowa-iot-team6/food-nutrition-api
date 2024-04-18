@@ -43,9 +43,14 @@ export class InvalidFoodServingsError extends Error {
  *
  * @param food USDA food query (serving size units must be "g"!)
  * @param mass
+ * @param userId
  * @throws
  */
-export function createFoodRecordFromUSDAFood(food: IUSDAFood, mass: number) {
+export function createFoodRecordFromUSDAFood(
+  food: IUSDAFood,
+  mass: number,
+  userId: mongoose.Types.ObjectId,
+) {
   if (food.servingSizeUnit?.toLowerCase() !== "g" || !food.servingSize)
     throw new InvalidFoodServingsError("g", food);
 
@@ -54,5 +59,6 @@ export function createFoodRecordFromUSDAFood(food: IUSDAFood, mass: number) {
   return new FoodRecord({
     ...food,
     servingsConsumed: servingsCount,
+    associatedUser: userId,
   });
 }

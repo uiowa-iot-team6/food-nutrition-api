@@ -78,23 +78,31 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
     const foods = (await usdaapi.foods(message)).filter((food) => {
       return food.servingSize && food.servingSizeUnit?.toLowerCase() === "g";
     });
-
     const searcher = new FuzzySearch(foods, ["description"], {
       caseSensitive: false,
     });
-    const closestMatch = searcher.search(message).at(0);
-
+    let closestMatch = searcher.search(message).at(0);
     if (!closestMatch) {
-      return errorResponse(
-        res,
-        404,
-        `No matching food found within USDA database matching label '${message}'`,
-      );
+      console.log("No matching food found within USDA database matching label");
+      try {
+        console.log("Trying to find the closest match", foods[0]);
+        closestMatch = foods[0];
+      } catch (e) {
+        return errorResponse(
+          res,
+          404,
+          `No matching food found within USDA database matching label '${message}'`,
+        );
+      }
     }
-
+    const user = await UserModel.findOne({ username: req.fields?.username });
+    if (!user) {
+      return errorResponse(res, 404, "User not found");
+    }
     const foodRecord = createFoodRecordFromUSDAFood(
       closestMatch,
       parsedFields.data.mass!,
+      user._id,
     );
     foodRecord.save();
 
