@@ -181,3 +181,26 @@ foodRouter.get("/get-by-username", async (req, res) => {
     }
   }
 });
+
+//get food entries from today
+foodRouter.get("/get-by-username-today", async (req, res) => {
+  if (!req.query) {
+    return res.status(400).json({ message: "Request query is missing" });
+  }
+  const { username } = req.query;
+  if (typeof username === "string") {
+    const user = await UserModel.findOne({ username });
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid user" });
+    }
+    if (user) {
+      //find food by associated user id
+      const food = await FoodRecord.find({
+        associatedUser: user._id,
+        date: { $gte: new Date(new Date().setHours(0, 0, 0)) },
+      });
+      return res.status(201).json({ food });
+    }
+  }
+});

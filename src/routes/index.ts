@@ -6,6 +6,7 @@ import { formidableParse } from "../middleware/formidable";
 import pinohttp from "pino-http";
 import { authRouter } from "./auth";
 import { UserRouter } from "./user";
+import { deviceRouter } from "./device";
 import express from "express";
 const apiRouter = Router();
 
@@ -18,3 +19,4 @@ app.use(express.json());
 apiRouter.use("/food", foodRouter);
 apiRouter.use("/auth", authRouter);
 apiRouter.use("/user", UserRouter);
+apiRouter.use("/device", deviceRouter);
