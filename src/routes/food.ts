@@ -164,10 +164,12 @@ foodRouter.post("/create-manually", async (req: Request, res: Response) => {
 });
 
 foodRouter.get("/get-by-username", async (req, res) => {
+  console.log("I AM OVER HERE");
   if (!req.query) {
     return res.status(400).json({ message: "Request query is missing" });
   }
   const { username } = req.query;
+  console.log("HSAda", username);
   if (typeof username === "string") {
     const user = await UserModel.findOne({ username });
 
@@ -175,6 +177,7 @@ foodRouter.get("/get-by-username", async (req, res) => {
       return res.status(401).json({ message: "Invalid user" });
     }
     if (user) {
+      console.log("HEHREHRHEHREH");
       //find food by associated user id
       const food = await FoodRecord.find({ associatedUser: user._id });
       return res.status(201).json({ food });
