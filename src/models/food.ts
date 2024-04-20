@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 import { IUSDAFood } from "../utils/usda-api";
 
 export const FoodNutrientSchema = new Schema({
@@ -16,6 +16,8 @@ export const FoodRecordSchema = new Schema({
   servingSizeUnit: String,
   servingsConsumed: Number,
   foodNutrients: [FoodNutrientSchema],
+  associatedUser: { type: Schema.Types.ObjectId, ref: "users" },
+  date: { type: Date, default: Date.now },
 });
 
 export const FoodRecord = model("FoodRecord", FoodRecordSchema);
@@ -41,9 +43,14 @@ export class InvalidFoodServingsError extends Error {
  *
  * @param food USDA food query (serving size units must be "g"!)
  * @param mass
+ * @param userId
  * @throws
  */
-export function createFoodRecordFromUSDAFood(food: IUSDAFood, mass: number) {
+export function createFoodRecordFromUSDAFood(
+  food: IUSDAFood,
+  mass: number,
+  userId: mongoose.Types.ObjectId,
+) {
   if (food.servingSizeUnit?.toLowerCase() !== "g" || !food.servingSize)
     throw new InvalidFoodServingsError("g", food);
 
@@ -52,5 +59,6 @@ export function createFoodRecordFromUSDAFood(food: IUSDAFood, mass: number) {
   return new FoodRecord({
     ...food,
     servingsConsumed: servingsCount,
+    associatedUser: userId,
   });
 }

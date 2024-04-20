@@ -4,8 +4,8 @@ import encode from "../utils/encode";
 import { errorResponse } from "../utils/response";
 import usdaapi from "../utils/usda-api";
 import FuzzySearch from "fuzzy-search";
-import { createFoodRecordFromUSDAFood } from "../models/food";
-
+import { createFoodRecordFromUSDAFood, FoodRecord } from "../models/food";
+import { UserModel } from "../models/user";
 export const foodRouter = Router();
 
 const foodPrompt =
@@ -78,23 +78,31 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
     const foods = (await usdaapi.foods(message)).filter((food) => {
       return food.servingSize && food.servingSizeUnit?.toLowerCase() === "g";
     });
-
     const searcher = new FuzzySearch(foods, ["description"], {
       caseSensitive: false,
     });
-    const closestMatch = searcher.search(message).at(0);
-
+    let closestMatch = searcher.search(message).at(0);
     if (!closestMatch) {
-      return errorResponse(
-        res,
-        404,
-        `No matching food found within USDA database matching label '${message}'`,
-      );
+      console.log("No matching food found within USDA database matching label");
+      try {
+        console.log("Trying to find the closest match", foods[0]);
+        closestMatch = foods[0];
+      } catch (e) {
+        return errorResponse(
+          res,
+          404,
+          `No matching food found within USDA database matching label '${message}'`,
+        );
+      }
     }
-
+    const user = await UserModel.findOne({ username: req.fields?.username });
+    if (!user) {
+      return errorResponse(res, 404, "User not found");
+    }
     const foodRecord = createFoodRecordFromUSDAFood(
       closestMatch,
       parsedFields.data.mass!,
+      user._id,
     );
     foodRecord.save();
 
@@ -108,5 +116,91 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
       500,
       `An unexpected error occured: ${(e as unknown as Error).message}`,
     );
+  }
+});
+
+foodRouter.post("/create-manually", async (req: Request, res: Response) => {
+  if (!req.fields) {
+    return res.status(400).json({ message: "Request body is missing" });
+  }
+  const {
+    username,
+    fdcId,
+    description,
+    servingSize,
+    servingSizeUnit,
+    servingsConsumed,
+    foodNutrients,
+  } = req.fields;
+
+  try {
+    // Find the user by username
+    const user = await UserModel.findOne({ username });
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid user" });
+    }
+    if (user) {
+      // Create a new food record
+      const foodRecord = new FoodRecord({
+        fdcId,
+        description,
+        servingSize,
+        servingSizeUnit,
+        servingsConsumed,
+        foodNutrients,
+        associatedUser: user._id,
+      });
+
+      // Save the food record to the database
+      await foodRecord.save();
+
+      return res.status(201).json({ food: foodRecord });
+    }
+  } catch (error) {
+    req.log.error("Error creating food record:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+foodRouter.get("/get-by-username", async (req, res) => {
+  if (!req.query) {
+    return res.status(400).json({ message: "Request query is missing" });
+  }
+  const { username } = req.query;
+  if (typeof username === "string") {
+    const user = await UserModel.findOne({ username });
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid user" });
+    }
+    if (user) {
+      //find food by associated user id
+      const food = await FoodRecord.find({ associatedUser: user._id });
+      return res.status(201).json({ food });
+    }
+  }
+});
+
+//get food entries from today
+foodRouter.get("/get-by-username-today", async (req, res) => {
+  if (!req.query) {
+    return res.status(400).json({ message: "Request query is missing" });
+  }
+  const { username } = req.query;
+  if (typeof username === "string") {
+    const user = await UserModel.findOne({ username });
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid user" });
+    }
+    if (user) {
+      //find food by associated user id
+      const food = await FoodRecord.find({
+        associatedUser: user._id,
+        date: { $gte: new Date(new Date().setHours(0, 0, 0)) },
+      });
+      return res.status(201).json({ food });
+    }
   }
 });
