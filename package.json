@@ -11,7 +11,8 @@
     "format": "npx prettier . --write",
     "lint": "eslint -c ./.eslintrc.js .",
     "prepare": "husky",
-    "seed:food": "ts-node src/import-fda.ts | pino-pretty"
+    "seed:food": "ts-node src/import-fda.ts | pino-pretty",
+    "docker:build": "docker build -t food-nutrition-api ."
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
