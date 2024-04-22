@@ -6,6 +6,7 @@ import usdaapi from "../utils/usda-api";
 import FuzzySearch from "fuzzy-search";
 import { createFoodRecordFromUSDAFood, FoodRecord } from "../models/food";
 import { UserModel } from "../models/user";
+import { getUserFromDevice } from "../utils/queries";
 export const foodRouter = Router();
 
 const foodPrompt =
@@ -18,8 +19,18 @@ const RecordFoodRequestSchema = z
       .min(1)
       .max(1)
       .transform((arg) => arg.at(0)),
-    username: z.string().optional(),
-    deviceCode: z.string().optional(),
+    username: z
+      .array(z.coerce.string())
+      .min(1)
+      .max(1)
+      .transform((arg) => arg.at(0))
+      .optional(),
+    deviceCode: z
+      .array(z.coerce.string())
+      .min(1)
+      .max(1)
+      .transform((arg) => arg.at(0))
+      .optional(),
   })
   .refine(
     (arg) => {
@@ -51,6 +62,16 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
 
   if (!parsedFields.success) {
     return errorResponse(res, 400, parsedFields.error.message);
+  }
+
+  const { deviceCode, username, mass } = parsedFields.data;
+
+  const user = deviceCode
+    ? await getUserFromDevice(deviceCode)
+    : await UserModel.findOne({ username });
+
+  if (!user) {
+    return errorResponse(res, 400, "No associated user found");
   }
 
   const response = await openai.chat.completions.create({
@@ -111,13 +132,10 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
         );
       }
     }
-    const user = await UserModel.findOne({ username: req.fields?.username });
-    if (!user) {
-      return errorResponse(res, 404, "User not found");
-    }
+
     const foodRecord = createFoodRecordFromUSDAFood(
       closestMatch,
-      parsedFields.data.mass!,
+      mass!,
       user._id,
     );
     foodRecord.save();
