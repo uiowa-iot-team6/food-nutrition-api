@@ -9,7 +9,7 @@
     "dev": "nodemon src/index.ts | pino-pretty",
     "mongo:up": "docker compose -f ./docker-compose.dev.yml up -d",
     "format": "npx prettier . --write",
-    "lint": "eslint -c ./.eslintrc.js .",
+    "lint": "eslint -c ./.eslintrc.js ./src",
     "prepare": "husky",
     "seed:food": "ts-node src/import-fda.ts | pino-pretty",
     "docker:build": "docker build -t food-nutrition-api ."
