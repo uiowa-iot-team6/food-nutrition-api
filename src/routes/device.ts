@@ -1,17 +1,27 @@
 import express from "express";
 import { DeviceModel } from "../models/device";
 import { UserModel } from "../models/user";
+import { z } from "zod";
+import { errorResponse } from "../utils/response";
 const router = express.Router();
+
+const DeviceCreateRequestSchema = z.object({
+  code: z
+    .array(z.coerce.string())
+    .min(1)
+    .max(1)
+    .transform((arg) => arg.at(0)),
+});
 
 // Create a new device
 router.post("/create", async (req, res) => {
-  if (!req.fields) {
-    return res.status(400).json({ message: "Request body is missing" });
+  const parsed = DeviceCreateRequestSchema.safeParse(req.fields);
+
+  if (!parsed.success) {
+    return errorResponse(res, 400, parsed.error.message);
   }
-  const { code } = req.fields;
-  if (!code) {
-    return res.status(400).json({ message: "Missing required fields" });
-  }
+
+  const { code } = parsed.data;
 
   req.log.info({ code }, "Creating device with provided information.");
 
