@@ -12,18 +12,26 @@ const foodPrompt =
   "If the picture shows food describe in 3 words or less the food in the photo. If the photo does not contain food, say 'not food'";
 
 const RecordFoodRequestSchema = z
-.object({
-  mass: z
-    .array(z.coerce.number())
-    .min(1)
-    .max(1)
-    .transform((arg) => arg.at(0)),
-  username: z.string().optional(),
-  deviceCode: z.string().optional(),
-})
-.refine((arg) => {
-  return arg.deviceCode || arg.username;
-}, {message: "A device code or username must be provided"})
+  .object({
+    mass: z
+      .array(z.coerce.number())
+      .min(1)
+      .max(1)
+      .transform((arg) => arg.at(0)),
+    username: z.string().optional(),
+    deviceCode: z.string().optional(),
+  })
+  .refine(
+    (arg) => {
+      return (
+        (arg.deviceCode || arg.username) && !(arg.deviceCode && arg.username)
+      );
+    },
+    {
+      message:
+        "A device code or username must be provided. None or both can't be provided",
+    },
+  );
 
 /**
  * POST /api/food/record
@@ -89,7 +97,9 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
     });
     let closestMatch = searcher.search(message).at(0);
     if (!closestMatch) {
-      req.log.warn("No matching food found within USDA database matching label");
+      req.log.warn(
+        "No matching food found within USDA database matching label",
+      );
       try {
         req.log.info("Trying to find the closest match", foods[0]);
         closestMatch = foods[0];
