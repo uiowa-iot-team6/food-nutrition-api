@@ -10,7 +10,7 @@ import { getUserFromDevice } from "../utils/queries";
 export const foodRouter = Router();
 
 const foodPrompt =
-  "If the picture shows food describe in 3 words or less the food in the photo. If the photo does not contain food, say 'not food'";
+  "If the picture shows food describe in 3 words or less the food in the photo. If the food item is a varient of another food item, please describe the food itself not the specific varient. For example, if the food can be different colors, only specify the food not the color. Do not include any punctuation in your response. If the photo does not contain food, say 'not food'";
 
 const RecordFoodRequestSchema = z
   .object({
@@ -110,6 +110,8 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
   }
 
   try {
+    req.log.info(`Querying USDA API with food description '${message}'`);
+
     const foods = (await usdaapi.foods(message)).filter((food) => {
       return food.servingSize && food.servingSizeUnit?.toLowerCase() === "g";
     });
