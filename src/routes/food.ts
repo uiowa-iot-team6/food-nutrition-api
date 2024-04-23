@@ -10,7 +10,7 @@ import { getUserFromDevice } from "../utils/queries";
 export const foodRouter = Router();
 
 const foodPrompt =
-  "If the picture shows food describe in 3 words or less the food in the photo. If the food item is a varient of another food item, please describe the food itself not the specific varient. For example, if the food can be different colors, only specify the food not the color. Do not include any punctuation in your response. If the photo does not contain food, say 'not food'";
+  "If the picture shows food describe in 3 words or less the food in the photo. If the food item is a varient of another food item, please describe the food itself not the specific varient. For example, if the food can be different colors, only specify the food not the color. Do not include any punctuation in your response. Try to avoid descriptive words of the item itself such as 'whole' or 'half' and only describe the actual food regardless of its form. If the photo does not contain food, say 'not food'";
 
 const RecordFoodRequestSchema = z
   .object({
