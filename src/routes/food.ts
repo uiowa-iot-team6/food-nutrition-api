@@ -109,43 +109,14 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
     return errorResponse(res, 404, "No food found in image.");
   }
 
+  let foods = [];
   try {
     req.log.info(`Querying USDA API with food description '${message}'`);
 
-    const foods = (await usdaapi.foods(message)).filter((food) => {
+    foods = (await usdaapi.foods(message)).filter((food) => {
       return food.servingSize && food.servingSizeUnit?.toLowerCase() === "g";
     });
-    const searcher = new FuzzySearch(foods, ["description"], {
-      caseSensitive: false,
-    });
-    let closestMatch = searcher.search(message).at(0);
-    if (!closestMatch) {
-      req.log.warn(
-        "No matching food found within USDA database matching label",
-      );
-      try {
-        req.log.info("Trying to find the closest match", foods[0]);
-        closestMatch = foods[0];
-      } catch (e) {
-        return errorResponse(
-          res,
-          404,
-          `No matching food found within USDA database matching label '${message}'`,
-        );
-      }
-    }
-
-    const foodRecord = createFoodRecordFromUSDAFood(
-      closestMatch,
-      mass!,
-      user._id,
-    );
-    foodRecord.save();
-
-    return res.send({
-      ...closestMatch,
-    });
-  } catch (e) {
+  } catch (e: unknown) {
     req.log.error("Error fetching foods from USDA API", e);
     return errorResponse(
       res,
@@ -153,6 +124,33 @@ foodRouter.post("/record", async (req: Request, res: Response) => {
       `An unexpected error occured: ${(e as unknown as Error).message}`,
     );
   }
+
+  const searcher = new FuzzySearch(foods, ["description"], {
+    caseSensitive: false,
+  });
+  const closestMatch = searcher.search(message).at(0) ?? foods.at(0);
+
+  if (!closestMatch) {
+    req.log.warn(
+      `No matching food found within USDA database matching description '${message}'`,
+    );
+    return errorResponse(
+      res,
+      404,
+      `No matching food found within USDA database matching description '${message}'`,
+    );
+  }
+
+  const foodRecord = createFoodRecordFromUSDAFood(
+    closestMatch,
+    mass!,
+    user._id,
+  );
+  foodRecord.save();
+
+  return res.send({
+    ...closestMatch,
+  });
 });
 
 foodRouter.post("/create-manually", async (req: Request, res: Response) => {
